@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>رفع صفحة إلى GitHub</title>
+  <style>
+    body { background:#333; color:#fff; font-family:sans-serif; padding:20px; }
+    textarea,input,button { width:100%; margin:10px 0; padding:10px; border-radius:8px; border:none; }
+    button { background:#555; color:#fff; cursor:pointer; }
+    button:hover { background:#777; }
+    .result { margin-top:20px; padding:10px; background:#222; border-radius:8px; }
+  </style>
+</head>
+<body>
+  <h1>نظام رفع صفحات إلى GitHub</h1>
+
+  <label>اسم الصفحة / المجلد:</label>
+  <input type="text" id="pageName" placeholder="مثال: craft">
+
+  <label>كود HTML:</label>
+  <textarea id="pageCode" rows="10" placeholder="ضع كود HTML هنا"></textarea>
+
+  <button onclick="uploadPage()">رفع الصفحة</button>
+
+  <div class="result" id="result"></div>
+
+<script>
+async function uploadPage() {
+  const token = "ضع_التوكن_هنا"; // التوكن الخاص بك
+  const repoOwner = "tamaa-pro"; // اسم الحساب
+  const repoName = "p"; // اسم المستودع
+  const pageName = document.getElementById("pageName").value.trim();
+  const pageCode = document.getElementById("pageCode").value;
+
+  if (!pageName || !pageCode) {
+    alert("الرجاء إدخال اسم الصفحة والكود!");
+    return;
+  }
+
+  // تحويل الكود إلى Base64
+  const content = btoa(unescape(encodeURIComponent(pageCode)));
+
+  const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${pageName}/index.html`;
+
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: {
+      "Authorization": `token ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      message: `إضافة صفحة ${pageName}`,
+      content: content
+    })
+  });
+
+  const data = await res.json();
+
+  if (res.ok) {
+    document.getElementById("result").innerHTML = `
+      ✅ تم رفع الصفحة بنجاح! <br>
+      <a href="https://${repoOwner}.github.io/${repoName}/${pageName}" target="_blank">
+        https://${repoOwner}.github.io/${repoName}/${pageName}
+      </a>
+    `;
+  } else {
+    document.getElementById("result").innerText = "خطأ: " + JSON.stringify(data, null, 2);
+  }
+}
+</script>
+</body>
+</html>
